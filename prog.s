@@ -36,6 +36,9 @@ newBoard: .space 100
 MSG_ITERATION:	.asciiz	"# Iterations: "
 MSG_AFTERITER_1:	.asciiz	"=== After iteration "
 MSG_AFTERITER_2:	.asciiz " ===\n"
+MSG_CHAR_DOT:	.word '.'
+MSG_CHAR_HASH:	.word '#'
+MSG_NEWLINE:	.word '\n'
 	.align 2
 maxiters:	.space 4
 main__n:	.space 4
@@ -119,6 +122,8 @@ main__for_i_end:
 	li $v0, 4
 	syscall
 
+	jal copyBackAndShow
+
 	# n++
 	lw $t0, main__n		# t0: n
 	addi $t0, $t0, 1
@@ -140,3 +145,79 @@ main__for_n_end:
 decideCell:
 neighbours:
 copyBackAndShow:
+	sw $fp, -4($sp)	# push $fp onto stack
+	la $fp, -4($sp)	# set up $fp for this function
+	sw $ra, -4($fp)	# save return address
+	sw $s0, -8($fp)	# save $s0 to use as ... int n
+	addi	$sp, $sp, -12	# reset $sp to last pushed item
+
+	# t0: i
+	# t1: j
+	# t2: N
+	lw $t2, N
+	li $t0, 0
+copyBackAndShow_for_i_start:
+	bge $t0, $t2, copyBackAndShow_for_i_end
+	
+	li $t1, 0
+copyBackAndShow_for_j_start:
+	bge $t1, $t2, copyBackAndShow_for_j_end
+
+	# t3: offset
+	mul $t3, $t0, $t2	# t3 = i * N
+	add $t3, $t3, $t1	# t3 = t3 + j
+
+	# t4: board[i][j] address
+	la $t4, board		# base address
+	addu $t4, $t3, $t4	# add offset
+
+	# t5: newBoard[i][j] address
+	la $t5, newBoard	# base address
+	addu $t5, $t3, $t5	# add offset
+
+	# t3: byte ad newBoard[i][j]
+	lb $t3, ($t5)
+
+	# board[i][j] = newboard[i][j];
+	sb $t3, ($t4)
+
+	# if (board[i][j] == 0)
+	beq $t3, $0, copyBackAndShow_else
+
+	# putchar ('#');
+	lw $t5, MSG_CHAR_HASH
+	move $a0, $t5
+	li $v0, 11
+	syscall
+
+	j copyBackAndShow_if_end
+
+copyBackAndShow_else:
+	# putchar ('.');
+	lw $t5, MSG_CHAR_DOT
+	move $a0, $t5
+	li $v0, 11
+	syscall
+copyBackAndShow_if_end:
+
+	# j++
+	addi $t1, $t1, 1
+	j copyBackAndShow_for_j_start
+
+copyBackAndShow_for_j_end:
+	# putchar ('\n');
+	lw $t3, MSG_NEWLINE
+	move $a0, $t3
+	li $v0, 11
+	syscall
+
+	# i++
+	addi $t0, $t0, 1
+	j copyBackAndShow_for_i_start
+
+copyBackAndShow_for_i_end:
+	lw $s0, -8($fp)	# restore $s0 value
+	lw $ra, -4($fp)	# restore $ra for return
+	la $sp, 4($fp)	# restore $sp (remove stack frame)
+	lw $fp, ($fp)	# restore $fp (remove stack frame)
+	jr $ra
