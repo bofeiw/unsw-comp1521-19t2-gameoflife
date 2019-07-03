@@ -102,9 +102,28 @@ main__for_j_start:
 	lw $a0, main__i
 	lw $a1, main__j
 	jal neighbours
-	move $a0, $v0
-	li $v0, 1
-	syscall
+	move $a1, $v0
+
+	# newboard[i][j] = decideCell (board[i][j], nn);
+	lw $t0, main__i		# t0: i
+	lw $t1, main__j		# t1: j
+	lw $t2, N			# t2: N
+	mul $t0, $t0, $t2	# t0: i * N
+	add $t0, $t0, $t1	# t0: i * N + j, offset
+	la $t1, board		# t1: board address
+	la $t2, newBoard	# t2: newBoard address
+	addu $t1, $t1, $t0	# t1: address of board[i][j]
+	addu $t2, $t2, $t0	# t1: address of newBoard[i][j]
+	move $s0, $t2		# s0: address of newBoard[i][j], saved
+	lb $t1, ($t1)		# t1: value at board[i][j]
+	move $a0, $t1		# a0: board[i][j]
+	jal decideCell
+	sb $v0, ($s0)
+
+
+	# move $a0, $v0
+	# li $v0, 1
+	# syscall
 
 	# j++
 	lw $t0, main__j		# t0: j
@@ -113,11 +132,11 @@ main__for_j_start:
 	j main__for_j_start
 
 main__for_j_end:
-	# putchar ('\n');
-	lw $t3, MSG_NEWLINE
-	move $a0, $t3
-	li $v0, 11
-	syscall
+	# # putchar ('\n');
+	# lw $t3, MSG_NEWLINE
+	# move $a0, $t3
+	# li $v0, 11
+	# syscall
 	# i++
 	lw $t0, main__i		# t0: i
 	addi $t0, $t0, 1
@@ -158,6 +177,69 @@ main__for_n_end:
 	
 
 decideCell:
+	sw $fp, -4($sp)	# push $fp onto stack
+	la $fp, -4($sp)	# set up $fp for this function
+	sw $ra, -4($fp)	# save return address
+	sw $s0, -8($fp)	# save $s0 to use as ... int n
+	addi	$sp, $sp, -12	# reset $sp to last pushed item
+
+	# t0: ret
+	# t1: old
+	# t2: nn
+	li $t0, 0
+	move $t1, $a0
+	move $t2, $a1
+
+	# outer if
+	# if (old == 1) {
+	li $t3, 1
+	beq $t1, $t3, decideCell__old1
+	# else if (nn == 3) {
+	li $t3, 3
+	beq $t2, $t3, decideCell__nn3
+	# else
+	# ret = 0;
+	li $t0, 0
+	j decideCell__if_end
+
+decideCell__nn3:
+	# ret = 1;
+	li $t0, 1
+	j decideCell__if_end
+
+decideCell__old1:
+	# inner if
+	# if (nn < 2)
+	li $t3, 2
+	blt $t2, $t3, decideCell__nn2
+	# else if (nn == 2 || nn == 3)
+	li $t3, 2
+	beq $t2, $t3, decideCell__nn2_or_3	# nn == 2
+	li $t3, 3
+	beq $t2, $t3, decideCell__nn2_or_3	# nn == 3
+	# inner else
+	li $t0, 0
+
+	j decideCell__inner_end
+
+decideCell__nn2:
+	li $t0, 0
+	j decideCell__inner_end
+
+decideCell__nn2_or_3:
+	li $t0, 1
+
+decideCell__inner_end:
+
+decideCell__if_end:
+	move $v0, $t0
+
+	lw $s0, -8($fp)	# restore $s0 value
+	lw $ra, -4($fp)	# restore $ra for return
+	la $sp, 4($fp)	# restore $sp (remove stack frame)
+	lw $fp, ($fp)	# restore $fp (remove stack frame)
+	jr $ra
+
 neighbours:
 	sw $fp, -4($sp)	# push $fp onto stack
 	la $fp, -4($sp)	# set up $fp for this function
@@ -269,7 +351,7 @@ copyBackAndShow_for_j_start:
 	addu $t5, $t3, $t5	# add offset
 
 	# t3: byte at newBoard[i][j]
-	lb $t3, ($t4)
+	lb $t3, ($t5)
 
 	# board[i][j] = newboard[i][j];
 	sb $t3, ($t4)

@@ -1,5 +1,5 @@
 gcc life.c
 
-./a.out <<< 5
+./a.out <<< 2
 
 rm a.out

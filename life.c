@@ -17,10 +17,10 @@ int main (void)
 		for (int i = 0; i < N; i++) {
 			for (int j = 0; j < N; j++) {
 				int nn = neighbours (i, j);
-				printf("%d", nn);
+				// printf("%d", nn);
 				newboard[i][j] = decideCell (board[i][j], nn);
 			}
-			printf("\n");
+			// printf("\n");
 		}
 		printf ("=== After iteration %d ===\n", n);
 		copyBackAndShow ();
