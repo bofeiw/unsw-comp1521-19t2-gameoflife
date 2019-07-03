@@ -1,1 +1,1 @@
-spim -file prog.s <<< 10
+spim -file prog.s <<< 2
