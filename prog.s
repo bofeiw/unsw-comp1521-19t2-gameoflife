@@ -42,24 +42,26 @@ newBoard: .space 100
 # .TEXT <main>
 	.text
 main:
+	# Set up stack frame
+	sw	$fp, -4($sp)	# push $fp onto stack
+	la	$fp, -4($sp)	# set up $fp for this function
+	sw	$ra, -4($fp)	# save return address
+	sw	$s0, -8($fp)	# save $s0 to use as ... int n
+	addi	$sp, $sp, -12	# reset $sp to last pushed item
 
-# Frame:	...
-# Uses:		...
-# Clobbers:	...
+	# main goes here
 
-# Locals:	...
+	# clean up stack frame
+	lw	$s0, -8($fp)	# restore $s0 value
+	lw	$ra, -4($fp)	# restore $ra for return
+	la	$sp, 4($fp)	# restore $sp (remove stack frame)
+	lw	$fp, ($fp)	# restore $fp (remove stack frame)
 
-# Structure:
-#	main
-#	-> [prologue]
-#	-> ...
-#	-> [epilogue]
+	# return back to caller
+	li	$v0, 0
+	jr	$ra		# return 0
+	
 
-# Code:
-
-	# Your main program code goes here.  Good luck!
-
-main__post:
-	jr	$ra
-
-	# Put your other functions here
+decideCell:
+neighbours:
+copyBackAndShow:
