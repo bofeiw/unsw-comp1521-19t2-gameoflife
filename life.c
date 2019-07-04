@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "board1.h"
+// #include "board3.h"
 
 int neighbours (int i, int j);
 char decideCell (int old, int nn);
