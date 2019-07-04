@@ -1,37 +1,13 @@
 # COMP1521 19t2 ... Game of Life on a NxN grid
 #
-# Written by <<Bofei Wang>>, June 2019
+# Written by Bofei Wang, July 2019
 
 ## Requires (from `boardX.s'):
 # - N (word): board dimensions
 # - board (byte[][]): initial board state
 # - newBoard (byte[][]): next board state
 
-# boardX.s
-########################################################################
-# board1.s ... Game of Life on a 10x10 grid
-
-# 	.data
-
-# N:	.word 10  # gives board dimensions
-
-# board:
-# 	.byte 1, 0, 0, 0, 0, 0, 0, 0, 0, 0
-# 	.byte 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
-# 	.byte 0, 0, 0, 1, 0, 0, 0, 0, 0, 0
-# 	.byte 0, 0, 1, 0, 1, 0, 0, 0, 0, 0
-# 	.byte 0, 0, 0, 0, 1, 0, 0, 0, 0, 0
-# 	.byte 0, 0, 0, 0, 1, 1, 1, 0, 0, 0
-# 	.byte 0, 0, 0, 1, 0, 0, 1, 0, 0, 0
-# 	.byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
-# 	.byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
-# 	.byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
-
-# newBoard: .space 100
-
-########################################################################
-
-## defined data
+## pre defined data
 	.align 2
 	.data
 MSG_ITERATION:	.asciiz	"# Iterations: "
@@ -40,6 +16,8 @@ MSG_AFTERITER_2:	.asciiz " ===\n"
 MSG_CHAR_DOT:	.word '.'
 MSG_CHAR_HASH:	.word '#'
 MSG_NEWLINE:	.word '\n'
+
+## variables in main
 	.align 2
 maxiters:	.space 4
 main__n:	.space 4
@@ -52,17 +30,15 @@ main__j:	.space 4
 	.globl	neighbours
 	.globl	copyBackAndShow
 
-
-########################################################################
 # .TEXT <main>
 	.text
 main:
 	# Set up stack frame
-	sw	$fp, -4($sp)	# push $fp onto stack
-	la	$fp, -4($sp)	# set up $fp for this function
-	sw	$ra, -4($fp)	# save return address
-	sw	$s0, -8($fp)	# save $s0 to use as ... int n
-	addi	$sp, $sp, -12	# reset $sp to last pushed item
+	sw	$fp, -4($sp)
+	la	$fp, -4($sp)
+	sw	$ra, -4($fp)
+	sw	$s0, -8($fp)
+	addi	$sp, $sp, -12
 	
 	# printf ("# Iterations: ");
 	la $a0, MSG_ITERATION
@@ -120,11 +96,6 @@ main__for_j_start:
 	jal decideCell
 	sb $v0, ($s0)
 
-
-	# move $a0, $v0
-	# li $v0, 1
-	# syscall
-
 	# j++
 	lw $t0, main__j		# t0: j
 	addi $t0, $t0, 1
@@ -132,11 +103,6 @@ main__for_j_start:
 	j main__for_j_start
 
 main__for_j_end:
-	# # putchar ('\n');
-	# lw $t3, MSG_NEWLINE
-	# move $a0, $t3
-	# li $v0, 11
-	# syscall
 	# i++
 	lw $t0, main__i		# t0: i
 	addi $t0, $t0, 1
@@ -166,10 +132,10 @@ main__for_i_end:
 
 main__for_n_end:
 	# clean up stack frame
-	lw	$s0, -8($fp)	# restore $s0 value
-	lw	$ra, -4($fp)	# restore $ra for return
-	la	$sp, 4($fp)	# restore $sp (remove stack frame)
-	lw	$fp, ($fp)	# restore $fp (remove stack frame)
+	lw	$s0, -8($fp)
+	lw	$ra, -4($fp)
+	la	$sp, 4($fp)	
+	lw	$fp, ($fp)	
 
 	# return back to caller
 	li	$v0, 0
@@ -177,11 +143,11 @@ main__for_n_end:
 	
 
 decideCell:
-	sw $fp, -4($sp)	# push $fp onto stack
-	la $fp, -4($sp)	# set up $fp for this function
-	sw $ra, -4($fp)	# save return address
-	sw $s0, -8($fp)	# save $s0 to use as ... int n
-	addi	$sp, $sp, -12	# reset $sp to last pushed item
+	sw $fp, -4($sp)	
+	la $fp, -4($sp)	
+	sw $ra, -4($fp)	
+	sw $s0, -8($fp)	
+	addi	$sp, $sp, -12
 
 	# t0: ret
 	# t1: old
@@ -234,18 +200,18 @@ decideCell__inner_end:
 decideCell__if_end:
 	move $v0, $t0
 
-	lw $s0, -8($fp)	# restore $s0 value
-	lw $ra, -4($fp)	# restore $ra for return
-	la $sp, 4($fp)	# restore $sp (remove stack frame)
-	lw $fp, ($fp)	# restore $fp (remove stack frame)
+	lw $s0, -8($fp)	
+	lw $ra, -4($fp)	
+	la $sp, 4($fp)	
+	lw $fp, ($fp)	
 	jr $ra
 
 neighbours:
-	sw $fp, -4($sp)	# push $fp onto stack
-	la $fp, -4($sp)	# set up $fp for this function
-	sw $ra, -4($fp)	# save return address
-	sw $s0, -8($fp)	# save $s0 to use as ... int n
-	addi	$sp, $sp, -12	# reset $sp to last pushed item
+	sw $fp, -4($sp)	
+	la $fp, -4($sp)	
+	sw $ra, -4($fp)	
+	sw $s0, -8($fp)	
+	addi	$sp, $sp, -12
 
 	# t0: nn
 	# t1: x
@@ -313,18 +279,18 @@ neighbours_for_y_end:
 neighbours_for_x_end:
 	move $v0, $t0
 
-	lw $s0, -8($fp)	# restore $s0 value
-	lw $ra, -4($fp)	# restore $ra for return
-	la $sp, 4($fp)	# restore $sp (remove stack frame)
-	lw $fp, ($fp)	# restore $fp (remove stack frame)
+	lw $s0, -8($fp)	
+	lw $ra, -4($fp)	
+	la $sp, 4($fp)	
+	lw $fp, ($fp)	
 	jr $ra
 
 copyBackAndShow:
-	sw $fp, -4($sp)	# push $fp onto stack
-	la $fp, -4($sp)	# set up $fp for this function
-	sw $ra, -4($fp)	# save return address
-	sw $s0, -8($fp)	# save $s0 to use as ... int n
-	addi	$sp, $sp, -12	# reset $sp to last pushed item
+	sw $fp, -4($sp)	
+	la $fp, -4($sp)	
+	sw $ra, -4($fp)	
+	sw $s0, -8($fp)	
+	addi	$sp, $sp, -12
 
 	# t0: i
 	# t1: j
@@ -391,8 +357,8 @@ copyBackAndShow_for_j_end:
 	j copyBackAndShow_for_i_start
 
 copyBackAndShow_for_i_end:
-	lw $s0, -8($fp)	# restore $s0 value
-	lw $ra, -4($fp)	# restore $ra for return
-	la $sp, 4($fp)	# restore $sp (remove stack frame)
-	lw $fp, ($fp)	# restore $fp (remove stack frame)
+	lw $s0, -8($fp)	
+	lw $ra, -4($fp)	
+	la $sp, 4($fp)	
+	lw $fp, ($fp)	
 	jr $ra
